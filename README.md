@@ -23,6 +23,11 @@ Without `uv`, use `python3.12 -m venv .venv && .venv/bin/pip install -r requirem
 Your progress is stored in `data/progress.db` (SQLite). Back it up by copying the file, and reset it under Settings.
 Run the tests with `.venv/bin/python -m pytest -q`.
 
+## 🔒 Login (for the deployed app)
+1. Locally: `.venv/bin/python set_password.py` — choose a password (≥ 10 characters). This writes `.streamlit/secrets.toml` (git-ignored) and prints a snippet.
+2. Streamlit Community Cloud: your app → **⋮ → Settings → Secrets** → paste the printed snippet → Save. The app restarts and asks for the password.
+Only a salted PBKDF2 hash is stored, never the password. If no hash is configured the app runs open and shows a warning in the sidebar.
+
 ## Beginner track (default)
 For starting from zero: Settings → *Study track* = **Beginner — pass first**. It adds
 6 foundation modules (complex numbers, poles, partial fractions, Laplace, feedback, matrices), a plain-language primer in every module,

@@ -9,9 +9,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st  # noqa: E402
 
-from dctrainer import calculator, db, views  # noqa: E402
+from dctrainer import auth, calculator, db, views  # noqa: E402
 
 st.set_page_config(page_title="Digital Control Trainer", page_icon="🎛️", layout="wide")
+if not auth.require_login():
+    st.stop()
 db.init()
 if db.get_setting("plan_start") is None:
     from datetime import date, timedelta
@@ -43,5 +45,6 @@ nav = st.navigation({
 })
 views.sidebar()
 with st.sidebar:
+    auth.sidebar_controls()
     calculator.mount()
 nav.run()
