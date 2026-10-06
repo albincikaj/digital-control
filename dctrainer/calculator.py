@@ -129,7 +129,7 @@ function makeScope(){ const M = window.math, r = x => deg ? x * Math.PI / 180 : 
     arg: z => d(M.arg(z)), angle: z => d(M.arg(z)), rect: (rr, th) => M.complex({abs: rr, arg: r(th)}),
     Ans: lastAns, ans: lastAns }); }
 function evaluate(){ const M = window.math, s = $('dcc-in').value.trim(); $('dcc-err').textContent = '';
-  if (!s) return; if (!M) { $('dcc-err').textContent = 'Math library not loaded yet — try again in a second.'; return; }
+  if (!s) return; if (!M) { pending = true; $('dcc-err').textContent = 'Loading the math library… your result appears automatically.'; return; }
   try { makeScope(); let res; const lines = s.split('\n').filter(l => l.trim());
     for (const l of lines) res = M.evaluate(prep(l), scope);
     if (res && res.entries) res = res.entries[res.entries.length - 1];
@@ -217,7 +217,13 @@ $('dcc-jr').onclick = () => { try { const desc = parseList($('dcc-jc').value), n
   $('dcc-jout').innerHTML = h; } catch (e) { $('dcc-jout').innerHTML = '<div class="err">' + e.message + '</div>'; } };
 
 setMode(); drawHist(); layout();
-if (!window.math) { const s = document.createElement('script'); s.src = '/app/static/math.min.js'; document.head.appendChild(s); }
+// Load mathjs: local static file (path differs locally vs. Streamlit Cloud, which serves the app under /~/+/), CDN as fallback.
+let pending = false;
+function loadMath(srcs){ if (window.math || !srcs.length) return; const s = document.createElement('script'); s.src = srcs[0];
+  s.onload = () => { if (pending) { pending = false; evaluate(); } };
+  s.onerror = () => { s.remove(); loadMath(srcs.slice(1)); }; document.head.appendChild(s); }
+(function(){ const p = location.pathname, i = p.indexOf('/~/+/'); const base = i >= 0 ? p.slice(0, i + 5) : '/';
+  loadMath([base + 'app/static/math.min.js', 'https://cdn.jsdelivr.net/npm/mathjs@13.2.0/lib/browser/math.js']); })();
 // Streamlit re-renders the main container; keep the margin when the panel is open
 new MutationObserver(pad).observe(document.body, {childList: true, subtree: true});
 })();

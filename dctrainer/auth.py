@@ -45,13 +45,16 @@ def verify(password: str, stored: str) -> bool:
 
 
 def configured_hash() -> str | None:
+    env = os.environ.get("DC_TRAINER_PASSWORD_HASH")
+    if env:  # explicit override (tests, Docker) wins over secrets.toml
+        return env
     try:
         h = st.secrets.get("auth", {}).get("password_hash")
         if h:
             return str(h)
     except Exception:  # no secrets file at all
         pass
-    return os.environ.get("DC_TRAINER_PASSWORD_HASH") or None
+    return None
 
 
 def require_login() -> bool:
